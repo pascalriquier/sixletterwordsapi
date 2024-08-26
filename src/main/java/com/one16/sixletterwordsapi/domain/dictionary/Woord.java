@@ -11,4 +11,8 @@ public record Woord(String tekst) {
   public Woordensamenstelling samengesteldMet(Woord woord) {
     return new Woordensamenstelling(this, woord);
   }
+
+  public boolean heeftLengte(int length) {
+    return tekst().length() == length;
+  }
 }

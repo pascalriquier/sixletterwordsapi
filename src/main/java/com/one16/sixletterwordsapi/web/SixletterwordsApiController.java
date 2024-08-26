@@ -8,6 +8,7 @@ import com.one16.sixletterwordsapi.domain.dictionary.Woordenboek;
 import com.one16.sixletterwordsapi.domain.dictionary.Woordensamenstelling;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,15 +24,23 @@ public class SixletterwordsApiController {
       produces = "text/plain")
   @ResponseBody
   public String woordsamenstellingen(@RequestParam("file") MultipartFile bestand,
-      HttpServletResponse response) throws IOException {
+      HttpServletResponse response,
+      @RequestParam(name = "lengte", required = false) Optional<Integer> lengte)
+      throws IOException {
+    WoordensamenstellingSolver woordsamenstellingenSolver = solver(bestand, lengte);
+    return woordsamenstellingenSolver.samengesteldeWoorden().stream()
+        .map(WoordensamenstellingDTO::new).map(WoordensamenstellingDTO::oplossing)
+        .collect(Collectors.joining("\n"));
+  }
+
+  private WoordensamenstellingSolver solver(MultipartFile bestand, Optional<Integer> lengte)
+      throws IOException {
     Woordenboek woordenboek =
         new InMemoryWoordenboekFactory().create(new InputStreamResource(bestand.getInputStream()));
-    WoordensamenstellingSolver woordsamenstellingenSolver =
+    BruteforceWoordenSamenstellingSolver solver =
         new BruteforceWoordenSamenstellingSolver(woordenboek);
-    return woordsamenstellingenSolver.samengesteldeWoorden().stream()
-        .map(WoordensamenstellingDTO::new)
-        .map(WoordensamenstellingDTO::oplossing)
-        .collect(Collectors.joining("\n"));
+    return lengte.map(l -> solver.metWoordsamenstellingenDieVoldoenAan(
+        samenstelling -> samenstelling.woord().heeftLengte(l))).orElse(solver);
   }
 
   private static record WoordensamenstellingDTO(Woordensamenstelling samenstelling) {

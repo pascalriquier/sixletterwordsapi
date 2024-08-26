@@ -30,6 +30,20 @@ class BruteforceWoordenSamenstellingSolverTest {
   }
 
   @Test
+  void kanEenFilterMeegevenWaaraanDeWoordenSamenstellingenMoetenVoldoen() {
+    InMemoryWoordenboek woordenboek =
+        new InMemoryWoordenboek(Set.of(new Woord("AB"), new Woord("ABCD"), new Woord("CD"),
+            new Woord("foobar"), new Woord("bar"), new Woord("foo")));
+
+    Set<Woordensamenstelling> samengesteldeWoorden =
+        new BruteforceWoordenSamenstellingSolver(woordenboek).metWoordsamenstellingenDieVoldoenAan(
+            samenstelling -> samenstelling.woord().heeftLengte(6)).samengesteldeWoorden();
+
+    assertThat(samengesteldeWoorden).containsExactlyInAnyOrder(
+        new Woordensamenstelling(List.of(new Woord("foo"), new Woord("bar"))));
+  }
+
+  @Test
   void kanWoordensamenstellingenUitWoordenboekVanOne16() {
     Woordenboek woordenboek =
         new InMemoryWoordenboekFactory().create(new ClassPathResource("input.txt"));

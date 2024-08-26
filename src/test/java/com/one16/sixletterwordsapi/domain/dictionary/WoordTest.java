@@ -15,4 +15,10 @@ class WoordTest {
         .isEqualTo(new Woordensamenstelling(List.of(eersteWoord, tweedeWoord)));
   }
 
+  @Test
+  void kanBepalenOfWoordLengteHeeft() {
+    assertThat(new Woord("foo").heeftLengte(3)).isTrue();
+    assertThat(new Woord("foo").heeftLengte(2)).isFalse();
+  }
+  
 }
