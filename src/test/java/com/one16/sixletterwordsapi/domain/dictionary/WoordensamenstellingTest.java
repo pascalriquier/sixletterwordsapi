@@ -35,8 +35,8 @@ class WoordensamenstellingTest {
 
   @Test
   void samengesteldWoordIsConcatenatieVanDeOnderdelen() {
-    assertThat(new Woordensamenstelling(new Woord("foo"), new Woord("bar")).woord())
-        .isEqualTo(new Woord("foobar"));
+    assertThat(new Woordensamenstelling(new Woord("foo"), new Woord("bar")).tekst())
+        .isEqualTo("foobar");
   }
 
 }

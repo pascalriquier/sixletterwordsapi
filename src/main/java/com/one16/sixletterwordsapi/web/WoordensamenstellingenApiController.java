@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-public class SixletterwordsApiController {
+public class WoordensamenstellingenApiController {
 
   @PostMapping(path = "/woordsamenstellingen", consumes = "multipart/form-data",
       produces = "text/plain")
@@ -40,13 +40,13 @@ public class SixletterwordsApiController {
     BruteforceWoordenSamenstellingSolver solver =
         new BruteforceWoordenSamenstellingSolver(woordenboek);
     return lengte.map(l -> solver.metWoordsamenstellingenDieVoldoenAan(
-        samenstelling -> samenstelling.woord().heeftLengte(l))).orElse(solver);
+        samenstelling -> samenstelling.heeftLengte(l))).orElse(solver);
   }
 
   private static record WoordensamenstellingDTO(Woordensamenstelling samenstelling) {
     public String oplossing() {
       return samenstelling.onderdelen().stream().map(Woord::tekst).collect(Collectors.joining("+"))
-          + "=" + samenstelling.woord().tekst();
+          + "=" + samenstelling.tekst();
     }
   }
 }

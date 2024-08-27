@@ -32,9 +32,7 @@ public class BruteforceWoordenSamenstellingSolver implements Woordensamenstellin
         .flatMap(woord -> woordenboek.alleWoorden()
             .map(anderWoord -> new Woordensamenstelling(woord, anderWoord)))
         .filter(woordensamenstellingFilter
-            .and(woordensamenstelling -> woordenboek.bevat(woordensamenstelling.woord())))
+            .and(woordensamenstelling -> woordensamenstelling.staatIn(woordenboek)))
         .collect(Collectors.toSet());
   }
-
-
 }

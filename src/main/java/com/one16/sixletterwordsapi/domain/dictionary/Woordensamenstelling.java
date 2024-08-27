@@ -18,8 +18,20 @@ public record Woordensamenstelling(List<Woord> onderdelen) {
     this(List.of(eerste, tweede));
   }
 
-  public Woord woord() {
+  private Woord woord() {
     return new Woord(this.onderdelen.stream().map(Woord::tekst).collect(Collectors.joining("")));
+  }
+
+  public boolean staatIn(Woordenboek woordenboek) {
+    return woordenboek.bevat(woord());
+  }
+
+  public boolean heeftLengte(Integer lengte) {
+    return woord().heeftLengte(lengte);
+  }
+
+  public String tekst() {
+    return woord().tekst();
   }
 
 }
