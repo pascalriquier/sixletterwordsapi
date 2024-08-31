@@ -2,37 +2,44 @@ package com.one16.sixletterwordsapi.domain;
 
 import com.one16.sixletterwordsapi.domain.dictionary.Woordenboek;
 import com.one16.sixletterwordsapi.domain.dictionary.Woordensamenstelling;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BruteforceWoordenSamenstellingSolver implements WoordensamenstellingSolver {
 
   private final Woordenboek woordenboek;
-  private final Predicate<Woordensamenstelling> woordensamenstellingFilter;
+  private final WoordensamenstellingSolverConfiguration configuration;
 
-  public BruteforceWoordenSamenstellingSolver(Woordenboek woordenboek) {
-    this(woordenboek, samenstelling -> true);
-  }
-
-  public BruteforceWoordenSamenstellingSolver(Woordenboek woordenboek,
-      Predicate<Woordensamenstelling> woordensamenstellingFilter) {
+  public BruteforceWoordenSamenstellingSolver(Woordenboek woordenboek, WoordensamenstellingSolverConfiguration configuration) {
     this.woordenboek = woordenboek;
-    this.woordensamenstellingFilter = woordensamenstellingFilter;
-  }
-
-  public BruteforceWoordenSamenstellingSolver metWoordsamenstellingenDieVoldoenAan(
-      Predicate<Woordensamenstelling> woordensamenstellingFilter) {
-    return new BruteforceWoordenSamenstellingSolver(woordenboek, woordensamenstellingFilter);
+    this.configuration = configuration;
   }
 
   @Override
-  public Set<Woordensamenstelling> samengesteldeWoorden() {
-    return woordenboek.alleWoorden()
-        .flatMap(woord -> woordenboek.alleWoorden()
-            .map(anderWoord -> new Woordensamenstelling(woord, anderWoord)))
-        .filter(woordensamenstellingFilter
-            .and(woordensamenstelling -> woordensamenstelling.staatIn(woordenboek)))
-        .collect(Collectors.toSet());
+  public Stream<Woordensamenstelling> samengesteldeWoorden() {
+    return alleWoordsamenstellingenVanGevraagdeLengte()
+        .filter(woordensamenstelling -> woordensamenstelling.staatIn(woordenboek))
+        .filter(woordensamenstelling -> woordensamenstelling.heeftLengte(configuration.woordLengte()));
   }
+
+  private Stream<Woordensamenstelling> alleWoordsamenstellingenVanGevraagdeLengte() {
+    Stream<Woordensamenstelling> samenstellingen = alleWoordsamenstellingenVanTweeWoorden();
+    return verderSamengesteldMetAlleWoorden(samenstellingen, configuration.aantalWoorden() - 2);
+  }
+
+  private Stream<Woordensamenstelling> verderSamengesteldMetAlleWoorden(
+      Stream<Woordensamenstelling> samenstellingen, int aantalWoorden) {
+    if (aantalWoorden == 0) {
+      return samenstellingen;
+    } else {
+      return verderSamengesteldMetAlleWoorden(samenstellingen.flatMap(
+          samenstelling -> woordenboek.alleWoorden().map(woord -> samenstelling.metWoord(woord))),
+          aantalWoorden - 1);
+    }
+  }
+
+  private Stream<Woordensamenstelling> alleWoordsamenstellingenVanTweeWoorden() {
+    return woordenboek.alleWoorden().flatMap(woord -> woordenboek.alleWoorden()
+        .map(anderWoord -> new Woordensamenstelling(woord, anderWoord)));
+  }
+
 }

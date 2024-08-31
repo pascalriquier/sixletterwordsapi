@@ -1,10 +1,10 @@
 package com.one16.sixletterwordsapi.web;
 
-import com.one16.sixletterwordsapi.domain.BruteforceWoordenSamenstellingSolver;
 import com.one16.sixletterwordsapi.domain.WoordensamenstellingSolver;
-import com.one16.sixletterwordsapi.domain.dictionary.InMemoryWoordenboekFactory;
+import com.one16.sixletterwordsapi.domain.WoordensamenstellingSolverConfiguration;
+import com.one16.sixletterwordsapi.domain.WoordensamenstellingSolverConfiguration.Builder;
+import com.one16.sixletterwordsapi.domain.WoordensamenstellingSolverFactory;
 import com.one16.sixletterwordsapi.domain.dictionary.Woord;
-import com.one16.sixletterwordsapi.domain.dictionary.Woordenboek;
 import com.one16.sixletterwordsapi.domain.dictionary.Woordensamenstelling;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -19,28 +19,32 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class WoordensamenstellingenApiController {
+  private final WoordensamenstellingSolverFactory woordensamenstellingSolverFactory;
+
+  public WoordensamenstellingenApiController(
+      WoordensamenstellingSolverFactory woordensamenstellingSolverFactory) {
+    this.woordensamenstellingSolverFactory = woordensamenstellingSolverFactory;
+  }
 
   @PostMapping(path = "/woordsamenstellingen", consumes = "multipart/form-data",
       produces = "text/plain")
   @ResponseBody
   public String woordsamenstellingen(@RequestParam("file") MultipartFile bestand,
       HttpServletResponse response,
-      @RequestParam(name = "lengte", required = false) Optional<Integer> lengte)
+      @RequestParam(name = "lengte", required = false) Optional<Integer> lengteParameter,
+      @RequestParam(name = "aantalWoorden", required = false) Optional<Integer> aantalWoordenParameter)
       throws IOException {
-    WoordensamenstellingSolver woordsamenstellingenSolver = solver(bestand, lengte);
-    return woordsamenstellingenSolver.samengesteldeWoorden().stream()
-        .map(WoordensamenstellingDTO::new).map(WoordensamenstellingDTO::oplossing)
-        .collect(Collectors.joining("\n"));
-  }
 
-  private WoordensamenstellingSolver solver(MultipartFile bestand, Optional<Integer> lengte)
-      throws IOException {
-    Woordenboek woordenboek =
-        new InMemoryWoordenboekFactory().create(new InputStreamResource(bestand.getInputStream()));
-    BruteforceWoordenSamenstellingSolver solver =
-        new BruteforceWoordenSamenstellingSolver(woordenboek);
-    return lengte.map(l -> solver.metWoordsamenstellingenDieVoldoenAan(
-        samenstelling -> samenstelling.heeftLengte(l))).orElse(solver);
+    Builder configurationBuilder =
+        new WoordensamenstellingSolverConfiguration.Builder();
+    lengteParameter.ifPresent(configurationBuilder::metWoordLengte);
+    aantalWoordenParameter.ifPresent(configurationBuilder::metAantalWoorden);
+    
+    WoordensamenstellingSolver woordsamenstellingenSolver = woordensamenstellingSolverFactory
+        .solver(new InputStreamResource(bestand.getInputStream()), configurationBuilder.build());
+
+    return woordsamenstellingenSolver.samengesteldeWoorden().map(WoordensamenstellingDTO::new)
+        .map(WoordensamenstellingDTO::oplossing).collect(Collectors.joining("\n"));
   }
 
   private static record WoordensamenstellingDTO(Woordensamenstelling samenstelling) {

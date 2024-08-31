@@ -12,9 +12,9 @@ class WoordTest {
     Woord eersteWoord = new Woord("foo");
     Woord tweedeWoord = new Woord("bar");
     assertThat(eersteWoord.samengesteldMet(tweedeWoord))
-        .isEqualTo(new Woordensamenstelling(List.of(eersteWoord, tweedeWoord)));
+    .isEqualTo(new Woordensamenstelling(List.of(eersteWoord, tweedeWoord)));
   }
-
+  
   @Test
   void kanBepalenOfWoordLengteHeeft() {
     assertThat(new Woord("foo").heeftLengte(3)).isTrue();

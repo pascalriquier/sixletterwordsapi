@@ -1,10 +1,10 @@
 package com.one16.sixletterwordsapi.domain;
 
 import com.one16.sixletterwordsapi.domain.dictionary.Woordensamenstelling;
-import java.util.Set;
+import java.util.stream.Stream;
 
 public interface WoordensamenstellingSolver {
 
-  Set<Woordensamenstelling> samengesteldeWoorden();
+  Stream<Woordensamenstelling> samengesteldeWoorden();
 
 }

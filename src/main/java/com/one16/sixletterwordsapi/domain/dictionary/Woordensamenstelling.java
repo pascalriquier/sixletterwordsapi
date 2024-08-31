@@ -2,6 +2,7 @@ package com.one16.sixletterwordsapi.domain.dictionary;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record Woordensamenstelling(List<Woord> onderdelen) {
 
@@ -34,4 +35,7 @@ public record Woordensamenstelling(List<Woord> onderdelen) {
     return woord().tekst();
   }
 
+  public Woordensamenstelling  metWoord(Woord woord) {
+    return new Woordensamenstelling(Stream.concat(onderdelen.stream(), Stream.of(woord)).toList());
+  }
 }

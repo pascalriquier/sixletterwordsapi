@@ -2,6 +2,7 @@ package com.one16.sixletterwordsapi.web;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.one16.sixletterwordsapi.domain.dictionary.InMemoryWoordenboek;
 import com.one16.sixletterwordsapi.domain.dictionary.InMemoryWoordenboekFactory;
@@ -19,7 +20,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,21 +31,20 @@ class WoordensamenstellingenApiControllerTest {
   @Test
   void kanAlleWoordsamenstellingenUitInputbestandTerugKrijgen() throws Exception {
     InMemoryWoordenboek woordenboek =
-        new InMemoryWoordenboek(Set.of(new Woord("AB"), new Woord("ABCD"), new Woord("CD"),
+        new InMemoryWoordenboek(Set.of(new Woord("ABC"), new Woord("ABCDEF"), new Woord("DEF"),
             new Woord("foobar"), new Woord("bar"), new Woord("foo")));
 
     mockMvc
         .perform(MockMvcRequestBuilders.multipart("/woordsamenstellingen")
             .file(toInputFile(woordenboek)))
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(content().string(containsString("AB+CD=ABCD")))
+        .andExpect(status().isOk()).andExpect(content().string(containsString("ABC+DEF=ABCD")))
         .andExpect(content().string(containsString("foo+bar=foobar")));
   }
 
   @Test
   void badRequestIndienGeenBestandMeegegeven() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.multipart("/woordsamenstellingen"))
-        .andExpect(MockMvcResultMatchers.status().isBadRequest());
+        .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -57,9 +56,23 @@ class WoordensamenstellingenApiControllerTest {
     mockMvc
         .perform(MockMvcRequestBuilders.multipart("/woordsamenstellingen")
             .file(toInputFile(woordenboek)).param("lengte", "6"))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(status().isOk())
         .andExpect(content().string(Matchers.not(containsString("AB+CD=ABCD"))))
         .andExpect(content().string(containsString("foo+bar=foobar")));
+  }
+
+  @Test
+  void kanMeegevenDatWoordenSamengesteldUitMeerDan2WoordenMoetenTeruggegevenWorden()
+      throws Exception {
+    InMemoryWoordenboek woordenboek =
+        new InMemoryWoordenboek(Set.of(new Woord("AB"), new Woord("ABCDEF"), new Woord("CD"),
+            new Woord("EF"), new Woord("foobar"), new Woord("bar"), new Woord("foo")));
+
+    mockMvc
+        .perform(MockMvcRequestBuilders.multipart("/woordsamenstellingen")
+            .file(toInputFile(woordenboek)).param("lengte", "6").param("aantalWoorden", "3"))
+        .andExpect(status().isOk()).andExpect(content().string(containsString("AB+CD+EF=ABCDEF")))
+        .andExpect(content().string((Matchers.not(containsString("foo+bar=foobar")))));
   }
 
   @Test
@@ -68,10 +81,9 @@ class WoordensamenstellingenApiControllerTest {
     Woordenboek woordenboek =
         new InMemoryWoordenboekFactory().create(new ClassPathResource("input.txt"));
 
-    String response = mockMvc.perform(
+    mockMvc.perform(
         MockMvcRequestBuilders.multipart("/woordsamenstellingen").file(toInputFile(woordenboek)))
-        .andReturn().getResponse().getContentAsString();
-    System.out.println(response);
+        .andExpect(status().isOk());
   }
 
 
