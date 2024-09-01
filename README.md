@@ -4,9 +4,5 @@ Code kata voor One16
 
 Bedenkingen/Opmerkingen
 
-* Dictionary ==> evt andere implementaties die in DB of remote service zoeken
-* Solver ==> evt andere implementatie die vertrekt van de bestaande woorden en zoekt op beginletter of ...
-** deze oplossing is OK voor kleine datasets
-* Documenteren met SpringRestDocs
-* Docs aanvullen met POST call
-* Maven commando voorzien om op te starten
+* Opstarten met mvn spring-boot:run
+* API callen met curl -X POST 'http://localhost:8080/woordsamenstellingen' -F file=@input.txt
